@@ -10,8 +10,8 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 #define LOADCELL_DOUT_PIN 25
 #define LOADCELL_SCK_PIN 26
-#define CALIBRATION_FACTOR 395
-// #define CALIBRATION_FACTOR 420
+// #define CALIBRATION_FACTOR 395
+#define CALIBRATION_FACTOR 420
 #define DIR 33
 #define STEP 27
 #define STEPPER_STEPS 1600
@@ -29,9 +29,9 @@ volatile SemaphoreHandle_t dongcua;
 volatile SemaphoreHandle_t canthuoc;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
-uint8_t start_angle = 69;
-uint8_t end_angle = 117;
-uint8_t angle;
+uint8_t start_angle = 74;
+uint8_t end_angle = 110;
+volatile uint8_t angle;
 bool isProcessing = false;  // Tránh lặp lại thông báo khi đang xử lý
 bool flag = 0;
 float weight = 0;
@@ -47,8 +47,8 @@ const String ingredients[NUM_INGREDIENTS] = {
 };
 
 float ingredientQuantities[NUM_RECIPES][NUM_INGREDIENTS] = {
-  { 6, 2, 3, 2, 2, 0, 0, 0, 0 },  // Trà Hoa Cúc
-  { 0, 2, 0, 0, 0, 2, 2, 3, 2 }   // Hao Mien Thang
+  { 2.5, 1, 1, 1, 2, 0, 0, 0, 0 },  // Trà Hoa Cúc
+  { 0, 1, 0, 0, 0, 0.8, 0.8, 1.5, 1.8 }   // Hao Mien Thang
 };
 
 const byte ROWS = 4;
@@ -81,10 +81,11 @@ void ARDUINO_ISR_ATTR onTimer() {
 static void mo_cua_task(void* arg) {
   for (;;) {
     if (xSemaphoreTake(mocua, portMAX_DELAY) == pdTRUE) {
-      end_angle = 117;
+      end_angle = 110;
       for (angle = start_angle; angle <= end_angle; angle++) {
+        Serial.println("tui dang o day ne");
         myServo.write(angle);
-        vTaskDelay(25 / portTICK_PERIOD_MS);
+        vTaskDelay(125 / portTICK_PERIOD_MS);
       }
     }
   }
@@ -110,8 +111,8 @@ static void can_thuoc_task(void* arg) {
     if (xSemaphoreTake(canthuoc, portMAX_DELAY) == pdTRUE) {
       scale.set_scale(CALIBRATION_FACTOR);  // Ensure calibration factor is applied                // Number of readings to average
       float totalWeight = 0;
-      totalWeight += (scale.get_units(10) + 0.3);
-      if (totalWeight <= 1.3) { totalWeight = 0; }
+      totalWeight += (scale.get_units(10) + 0.2);
+      if (totalWeight <= 0.3) { totalWeight = 0; }
       vTaskDelay(2 / portTICK_PERIOD_MS);
       weight = totalWeight;
     }
@@ -177,7 +178,7 @@ void Hien_Thi_Thanh_Phan_Tra_Hoa_Cuc(int recipeIndex) {
   lcd.setCursor(0, 1);
   lcd.print("Ban chon Bai Thuoc:");
   lcd.setCursor(1, 2);
-  lcd.print("Tra Hoa Cuc (15 gr)");
+  lcd.print("Tra Hoa Cuc (7.5 gr)");
   previousMillis = millis();  // Lưu thời gian hiện tại
   while (millis() - previousMillis < interval) {
     // Chương trình sẽ không bị gián đoạn trong khi đợi
@@ -185,12 +186,12 @@ void Hien_Thi_Thanh_Phan_Tra_Hoa_Cuc(int recipeIndex) {
   lcd.clear();
   lcd.setCursor(5, 0);
   lcd.print("Thanh phan");  // Cho xem thành phần
-  //======= Thanh phan [Ky tu]: 2g ==========//
+  //======= Thanh phan [Tao do]: 6g =======//
   lcd.setCursor(0, 1);
-  lcd.print("1.Ky Tu     (2g)");
-  //======= Thanh phan [Re tranh]: 3g =======//
+  lcd.print("1.Tao do    (2.5g)");
+  //======= Thanh phan [Ky tu]: 2g ==========//
   lcd.setCursor(0, 2);
-  lcd.print("2.Re Tranh  (3g)");
+  lcd.print("2.Ky Tu      (1g)");
   previousMillis = millis();  // Lưu thời gian hiện tại
   while (millis() - previousMillis < interval) {
     // Chương trình sẽ không bị gián đoạn trong khi đợi
@@ -198,12 +199,12 @@ void Hien_Thi_Thanh_Phan_Tra_Hoa_Cuc(int recipeIndex) {
   lcd.clear();  // Xoa man hinh hien thi 3 nguyen lieu tiep theo
   lcd.setCursor(5, 0);
   lcd.print("Thanh phan");  // Cho xem thành phần
-  //======= Thanh phan [Tao do]: 6g =======//
+  //======= Thanh phan [Re tranh]: 3g =======//
   lcd.setCursor(0, 1);
-  lcd.print("3.Tao do    (6g)");
+  lcd.print("3.Re Tranh  (1g)");
   //======= Thanh phan [Hoa cuc]: 2g =======//
   lcd.setCursor(0, 2);
-  lcd.print("4.Hoa cuc   (2g)");
+  lcd.print("4.Hoa cuc   (1g)");
   //======= Thanh phan [Nhan tran]: 2g =======//
   lcd.setCursor(0, 3);
   lcd.print("5.Nhan Tran (2g)");
@@ -234,7 +235,7 @@ void Hien_Thi_Thanh_Phan_Hao_Mien_Thang(int recipeIndex) {
   lcd.setCursor(0, 2);
   lcd.print("Hao Mien Thang");
   lcd.setCursor(13, 3);
-  lcd.print("(11 gr)");
+  lcd.print("(5.9 gr)");
   previousMillis = millis();  // Lưu thời gian hiện tại
   while (millis() - previousMillis < interval) {
     // Chương trình sẽ không bị gián đoạn trong khi đợi
@@ -244,10 +245,10 @@ void Hien_Thi_Thanh_Phan_Hao_Mien_Thang(int recipeIndex) {
   lcd.print("Thanh phan");  // Cho xem thành phần
   //======= Thanh phan [Ky tu]: 1g ==========//
   lcd.setCursor(0, 1);
-  lcd.print("1.Ky Tu      (1g)");
+  lcd.print("1.Ky Tu       (1g)");
   //======= Thanh phan [Cam Thao]: 1g =======//
   lcd.setCursor(0, 2);
-  lcd.print("2.Cam Thao   (1g)");
+  lcd.print("2.Cam Thao   (0.8g)");
   previousMillis = millis();  // Lưu thời gian hiện tại
   while (millis() - previousMillis < interval) {
     // Chương trình sẽ không bị gián đoạn trong khi đợi
@@ -257,13 +258,13 @@ void Hien_Thi_Thanh_Phan_Hao_Mien_Thang(int recipeIndex) {
   lcd.print("Thanh phan");  // Cho xem thành phần
   //======= Thanh phan [Vien Chi]: 2 g =======//
   lcd.setCursor(0, 1);
-  lcd.print("3.Vien Chi      (2g)");
+  lcd.print("3.Vien Chi      (0.8g)");
   //======= Thanh phan [Long Nhan]: 2 g =======//
   lcd.setCursor(0, 2);
-  lcd.print("4.Long Nhan     (2g)");
+  lcd.print("4.Long Nhan     (1.5g)");
   //======= Thanh phan [Toan Tao Nhan]: 5 g =======//
   lcd.setCursor(0, 3);
-  lcd.print("5.Toan Tao Nhan (5g)");
+  lcd.print("5.Toan Tao Nhan (1.8g)");
   previousMillis = millis();  // Lưu thời gian hiện tại
   while (millis() - previousMillis < interval) {
     // Chương trình sẽ không bị gián đoạn trong khi đợi
@@ -422,8 +423,12 @@ void Quay_Den_O_Thuoc(int targetSection, const String& ingredientName, int cycle
   // Tắt động cơ khi hoàn thành
   digitalWrite(EN, HIGH);
   currentSection = targetSection;
-  xTaskCreate(can_thuoc_task, "can_thuoc_task", 4096, NULL, 5, NULL);
-  xTaskCreate(mo_cua_task, "mo_cua_task", 4096, NULL, 5, NULL);
+ // Serial.println("bo dang o day");
+ // xTaskCreate(can_thuoc_task, "can_thuoc_task", 4096, NULL, 5, NULL);
+  //xTaskCreate(mo_cua_task, "mo_cua_task", 4096, NULL, 5, NULL);
+  vTaskResume(xTaskGetHandle("mo_cua_task"));
+  vTaskResume(xTaskGetHandle("can_thuoc_task"));
+    vTaskSuspend(xTaskGetHandle("dong_cua_task"));  
   MoCua();
   scale.tare();
 
@@ -439,7 +444,7 @@ void Quay_Den_O_Thuoc(int targetSection, const String& ingredientName, int cycle
     lcd.print(" / ");
     lcd.print(requiredWeight, 1);
     lcd.print(" g");
-
+       // Xóa Task1 bằng tên
     // if ((currentWeight >= (requiredWeight - weightTolerance)) && (currentWeight <= (requiredWeight + weightTolerance))) {
     //   break;  // Dừng lại khi khối lượng đã đạt yêu cầu
     // }
@@ -447,15 +452,21 @@ void Quay_Den_O_Thuoc(int targetSection, const String& ingredientName, int cycle
 
 
 
-    if ((currentWeight >= (requiredWeight - weightTolerance)) && (currentWeight <= (requiredWeight + weightTolerance))) {
-      end_angle = angle;
-      vTaskDelete(xTaskGetHandle("mo_cua_task"));     // Xóa Task1 bằng tên
-      vTaskDelete(xTaskGetHandle("can_thuoc_task"));  // Xóa Task1 bằng tên
-      flag = 1;
-      break;  // Exit loop when weight is within the allowed tolerance
-    }
+    // if ((currentWeight >= (requiredWeight - weightTolerance)) || (currentWeight <= (requiredWeight + weightTolerance))) {
+    //   vTaskSuspend(xTaskGetHandle("mo_cua_task"));     // Xóa Task1 bằng tên
+    //   end_angle = angle;
+    //    vTaskResume(xTaskGetHandle("dong_cua_task"));
+    //   vTaskSuspend(xTaskGetHandle("can_thuoc_task"));  // Xóa Task1 bằng tên
+    //   flag = 1;
+    //   break;  // Exit loop when weight is within the allowed tolerance
+    // }
   }
-
+   
+      vTaskSuspend(xTaskGetHandle("mo_cua_task"));     // Xóa Task1 bằng tên
+      end_angle = angle;
+       vTaskResume(xTaskGetHandle("dong_cua_task"));
+      vTaskSuspend(xTaskGetHandle("can_thuoc_task"));  // Xóa Task1 bằng tên
+      flag = 1;
   // Đóng cửa chỉ khi khối lượng đã đủ và cửa đang mở
   // if (currentWeight >= requiredWeight - weightTolerance) {
   //   DongCua();  // Đóng cửa
@@ -463,7 +474,9 @@ void Quay_Den_O_Thuoc(int targetSection, const String& ingredientName, int cycle
 
   DongCua();
   while (cnt < 199) {
+      DongCua();
     flag = 1;
+    vTaskSuspend(xTaskGetHandle("mo_cua_task"));     // Xóa Task1 bằng tên
     Serial.println("t ne ");
   }
   cnt = 0;
