@@ -47,8 +47,8 @@ const String ingredients[NUM_INGREDIENTS] = {
 };
 
 float ingredientQuantities[NUM_RECIPES][NUM_INGREDIENTS] = {
-  { 2.5, 1, 1, 1, 2, 0, 0, 0, 0 },  // Trà Hoa Cúc
-  { 0, 1, 0, 0, 0, 0.8, 0.8, 1.5, 1.8 }   // Hao Mien Thang
+  { 2.5, 1, 1, 1, 2, 0, 0, 0, 0 },       // Trà Hoa Cúc
+  { 0, 1, 0, 0, 0, 0.8, 0.8, 1.5, 1.8 }  // Hao Mien Thang
 };
 
 const byte ROWS = 4;
@@ -177,8 +177,8 @@ void Hien_Thi_Thanh_Phan_Tra_Hoa_Cuc(int recipeIndex) {
   lcd.clear();
   lcd.setCursor(0, 1);
   lcd.print("Ban chon Bai Thuoc:");
-  lcd.setCursor(1, 2);
-  lcd.print("Tra Hoa Cuc (7.5 gr)");
+  lcd.setCursor(0, 2);
+  lcd.print("Tra Hoa Cuc(7.5 gr)");
   previousMillis = millis();  // Lưu thời gian hiện tại
   while (millis() - previousMillis < interval) {
     // Chương trình sẽ không bị gián đoạn trong khi đợi
@@ -234,7 +234,7 @@ void Hien_Thi_Thanh_Phan_Hao_Mien_Thang(int recipeIndex) {
   lcd.print("Ban chon Bai Thuoc:");
   lcd.setCursor(0, 2);
   lcd.print("Hao Mien Thang");
-  lcd.setCursor(13, 3);
+  lcd.setCursor(12, 3);
   lcd.print("(5.9 gr)");
   previousMillis = millis();  // Lưu thời gian hiện tại
   while (millis() - previousMillis < interval) {
@@ -258,13 +258,13 @@ void Hien_Thi_Thanh_Phan_Hao_Mien_Thang(int recipeIndex) {
   lcd.print("Thanh phan");  // Cho xem thành phần
   //======= Thanh phan [Vien Chi]: 2 g =======//
   lcd.setCursor(0, 1);
-  lcd.print("3.Vien Chi      (0.8g)");
+  lcd.print("3.Vien Chi    (0.8g)");
   //======= Thanh phan [Long Nhan]: 2 g =======//
   lcd.setCursor(0, 2);
-  lcd.print("4.Long Nhan     (1.5g)");
+  lcd.print("4.Long Nhan   (1.5g)");
   //======= Thanh phan [Toan Tao Nhan]: 5 g =======//
   lcd.setCursor(0, 3);
-  lcd.print("5.Toan Tao Nhan (1.8g)");
+  lcd.print("5.T.Tao Nhan  (1.8g)");
   previousMillis = millis();  // Lưu thời gian hiện tại
   while (millis() - previousMillis < interval) {
     // Chương trình sẽ không bị gián đoạn trong khi đợi
@@ -423,12 +423,12 @@ void Quay_Den_O_Thuoc(int targetSection, const String& ingredientName, int cycle
   // Tắt động cơ khi hoàn thành
   digitalWrite(EN, HIGH);
   currentSection = targetSection;
- // Serial.println("bo dang o day");
- // xTaskCreate(can_thuoc_task, "can_thuoc_task", 4096, NULL, 5, NULL);
+  // Serial.println("bo dang o day");
+  // xTaskCreate(can_thuoc_task, "can_thuoc_task", 4096, NULL, 5, NULL);
   //xTaskCreate(mo_cua_task, "mo_cua_task", 4096, NULL, 5, NULL);
   vTaskResume(xTaskGetHandle("mo_cua_task"));
   vTaskResume(xTaskGetHandle("can_thuoc_task"));
-    vTaskSuspend(xTaskGetHandle("dong_cua_task"));  
+  vTaskSuspend(xTaskGetHandle("dong_cua_task"));
   MoCua();
   scale.tare();
 
@@ -444,7 +444,7 @@ void Quay_Den_O_Thuoc(int targetSection, const String& ingredientName, int cycle
     lcd.print(" / ");
     lcd.print(requiredWeight, 1);
     lcd.print(" g");
-       // Xóa Task1 bằng tên
+    // Xóa Task1 bằng tên
     // if ((currentWeight >= (requiredWeight - weightTolerance)) && (currentWeight <= (requiredWeight + weightTolerance))) {
     //   break;  // Dừng lại khi khối lượng đã đạt yêu cầu
     // }
@@ -461,12 +461,12 @@ void Quay_Den_O_Thuoc(int targetSection, const String& ingredientName, int cycle
     //   break;  // Exit loop when weight is within the allowed tolerance
     // }
   }
-   
-      vTaskSuspend(xTaskGetHandle("mo_cua_task"));     // Xóa Task1 bằng tên
-      end_angle = angle;
-       vTaskResume(xTaskGetHandle("dong_cua_task"));
-      vTaskSuspend(xTaskGetHandle("can_thuoc_task"));  // Xóa Task1 bằng tên
-      flag = 1;
+
+  vTaskSuspend(xTaskGetHandle("mo_cua_task"));  // Xóa Task1 bằng tên
+  end_angle = angle;
+  vTaskResume(xTaskGetHandle("dong_cua_task"));
+  vTaskSuspend(xTaskGetHandle("can_thuoc_task"));  // Xóa Task1 bằng tên
+  flag = 1;
   // Đóng cửa chỉ khi khối lượng đã đủ và cửa đang mở
   // if (currentWeight >= requiredWeight - weightTolerance) {
   //   DongCua();  // Đóng cửa
@@ -474,9 +474,9 @@ void Quay_Den_O_Thuoc(int targetSection, const String& ingredientName, int cycle
 
   DongCua();
   while (cnt < 199) {
-      DongCua();
+    DongCua();
     flag = 1;
-    vTaskSuspend(xTaskGetHandle("mo_cua_task"));     // Xóa Task1 bằng tên
+    vTaskSuspend(xTaskGetHandle("mo_cua_task"));  // Xóa Task1 bằng tên
     Serial.println("t ne ");
   }
   cnt = 0;
@@ -508,7 +508,7 @@ void Quay_Ve_O_Bat_Dau(int targetSection) {
 
 void setup() {
   myServo.attach(servoPin);
-  
+
   Serial.begin(115200);
 
   pinMode(EN, OUTPUT);
